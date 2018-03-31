@@ -1,0 +1,40 @@
+{
+  "name": "vr-us-population",
+  "description": "Visualization of US population by county",
+  "version": "0.0.1",
+  "license": "MIT",
+  "scripts": {
+    "start": "webpack-dev-server --port 3000 --open",
+    "build": "webpack",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
+  },
+  "author": "Steve Brudz",
+  "keywords": [
+    "aframe",
+    "aframe-example",
+    "aframe-boilerplate",
+    "aframe-scene",
+    "webvr",
+    "vr",
+    "typescript"
+  ],
+  "dependencies": {
+    "@types/aframe": "^0.7.1",
+    "aframe": "^0.7.1",
+    "aframe-geo-projection-component": "file:/Users/stevebrudz/Dev/aframe-geo-projection-component",
+    "d3-array": "^1.2.1",
+    "d3-fetch": "^1.1.0"
+  },
+  "devDependencies": {
+    "@types/d3": "^5.0.0",
+    "copy-webpack-plugin": "^4.5.1",
+    "gh-pages": "^1.1.0",
+    "html-webpack-plugin": "^3.0.6",
+    "ts-loader": "^4.0.1",
+    "typescript": "^2.7.2",
+    "webpack": "^4.1.1",
+    "webpack-cli": "^2.0.12",
+    "webpack-dev-server": "^3.1.1"
+  }
+}

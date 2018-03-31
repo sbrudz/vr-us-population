@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Hello, World! - A-Frame</title>
+    <meta name="description" content="Hello, World! - A-Frame">
+    <script src="https://aframe.io/releases/0.7.1/aframe.min.js"></script>
+    <%
+    // webpack inserts bundled assets here
+    %>
+</head>
+<body>
+<a-scene>
+    <a-assets>
+        <a-asset-item id="us-map" src="assets/cb_2016_us_county_20m-albers-pop.geo.json" />
+    </a-assets>
+
+    <a-entity rotation="-90 0 0"
+              material="color: red;"
+              geo-projection="
+                  src: #us-map;
+                  projection: geoIdentity;
+                  height: 10;
+                  width: 20;"
+              data-for-map
+    ></a-entity>
+
+    <a-sky color="#ECECEC"></a-sky>
+</a-scene>
+</body>
+</html>
