@@ -1,46 +1,18 @@
 import "aframe-geo-projection-component";
-import { max } from "d3-array";
-import { csv } from "d3-fetch";
+import { extent } from "d3-array";
+import { scaleLinear } from "d3-scale";
 
 const THREE = AFRAME.THREE;
-
-const processPopDataFile = (d) => {
-    return {
-        summaryLevel: d.sumlev,
-        region: d.region,
-        division: d.division,
-        state: d.state,
-        county: d.county,
-        stateName: d.stname,
-        countyName: d.ctyname,
-        census2010pop: +d.census2010pop,
-        estimatesbase2010: +d.estimatesbase2010,
-        popestimate2010: +d.popestimate2010,
-        popestimate2011: +d.popestimate2011,
-        popestimate2012: +d.popestimate2012,
-        popestimate2013: +d.popestimate2013,
-        popestimate2014: +d.popestimate2014,
-        popestimate2015: +d.popestimate2015,
-        popestimate2016: +d.popestimate2016,
-        npopchg_2010: +d.npopchg_2010,
-        npopchg_2011: +d.npopchg_2011,
-        npopchg_2012: +d.npopchg_2012,
-        npopchg_2013: +d.npopchg_2013,
-        npopchg_2014: +d.npopchg_2014,
-        npopchg_2015: +d.npopchg_2015,
-        npopchg_2016: +d.npopchg_2016
-    };
-};
 
 
 AFRAME.registerComponent('data-for-map', {
     dependencies: ['geo-projection'],
     schema: {
         year: {
-            default: '2010'
+            default: '2016'
         },
         maxExtrudeHeight: {
-            default: 3
+            default: 2
         }
     },
     init: function () {
@@ -50,65 +22,37 @@ AFRAME.registerComponent('data-for-map', {
         this.el.addEventListener('geo-src-loaded', this.geoJsonReady.bind(this));
     },
     update: function (oldData) {
+        if (!this.geoProjectionComponent.geoJson) {
+            return;
+        }
         if (this.data.maxExtrudeHeight !== oldData.maxExtrudeHeight) {
-            // this.geoJsonReady();
+            this.geoJsonReady();
         }
     },
-    geoJsonReady: async function () {
-        // Override the render method of geoProjectionComponent with the custom one on this component
-        // this allows us to push the data that needs to be visualized into the rendering pipeline
-        this.geoProjectionComponent.render = this.render;
-
-        // Now kick off loading the data
-        const populationData = await csv('./assets/us-pop-2010-2016.csv', processPopDataFile);
-        this.onDataLoaded(populationData);
-    },
-    onDataLoaded: function(populationData) {
-        const popColumnName = `popestimate${this.data.year}`;
-        const deltaPopColumnName = `npopchg_${this.data.year}`;
-        const maxPopulation = max(populationData, function (d) {
-            return d[popColumnName];
-        });
-        const populationByGeoId = populationData.reduce(function (accum, d) {
-            const fipsForCounty = `0500000US${d.state}${d.county}`;
-            accum[fipsForCounty] = d;
-            return accum;
-        }, {});
-        this.geoProjectionComponent.render(populationByGeoId, maxPopulation, this.data.maxExtrudeHeight,
-            popColumnName, deltaPopColumnName);
-    },
-    // Custom rendering function that does all the work
-    // Note that the `this` for this function is the geoProjectionComponent instead of this data-for-map component
-    // So that we can use all the functions and data of the geoProjectionComponent to help with rendering
-    render: function (populationByGeoId, maxPopulation, maxExtrudeHeight, popColumnName, deltaPopColumnName) {
-        if (!populationByGeoId) return;
+    geoJsonReady: function () {
         const material = this.el.components.material.material;
         let extrudeGeometry = null;
         let outlineVertices = [];
         // Split the geoJson into features and render each one individually so that we can set a different
         // extrusion height for each based on the population.
-        this.geoJson.features.forEach(function (feature) {
-            if (feature.properties.STATE === '72') {
-                return; // skip puerto rico
-            }
-            const geoId = feature.properties.GEO_ID;
-            let populationData = populationByGeoId[geoId];
-            if (!populationData) {
-                console.warn(`County ${feature.properties.NAME} in state ${feature.properties.STATE} (${geoId}) has no associated population data`);
-                return;
-            }
-            const population = populationData[popColumnName];
-            const extrudeAmount = (population / maxPopulation) * maxExtrudeHeight;
+        const features = this.geoProjectionComponent.geoJson.features;
+        const popColumnName = `pop${this.data.year}`;
+        // TODO: this should be the min/max for all years so heights have consistent meanings
+        const popDomain = extent(features, (d:any) => (+d.properties[popColumnName]));
+        const extrudeScale = scaleLinear().domain(popDomain).range([0, this.data.maxExtrudeHeight]);
+        features.forEach(function (feature) {
+            const population = feature.properties[popColumnName];
+            const extrudeAmount = extrudeScale(population);
             const extrudeSettings = {
                 amount: extrudeAmount,
                 bevelEnabled: false
             };
 
-            const mapRenderContext = this.renderer.renderToContext(feature, this.projection);
+            const mapRenderContext = this.geoProjectionComponent.renderer.renderToContext(feature, this.geoProjectionComponent.projection);
             const countyShapes = mapRenderContext.toShapes(this.data.isCCW);
 
             // Gather the outline of the county and set the height of the outline to the extrude level
-            // so that the top of the state is outlined
+            // so that the top of the county is outlined
             outlineVertices = outlineVertices.concat(mapRenderContext.toVertices(extrudeAmount));
 
             // Merge all the extruded feature geometries together for better rendering performance
