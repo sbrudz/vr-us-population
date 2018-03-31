@@ -27,3 +27,5 @@ dist
 .idea
 
 .env
+
+data/temp
