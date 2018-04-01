@@ -1,7 +1,8 @@
 import "aframe-geo-projection-component";
 import { extent } from "d3-array";
-import { scaleLinear } from "d3-scale";
+import { scaleLinear, scaleQuantize } from "d3-scale";
 import { csv } from "d3-fetch";
+import { schemePiYG } from "d3-scale-chromatic";
 
 const THREE = AFRAME.THREE;
 const MAX_YEAR = 2016;
@@ -36,23 +37,24 @@ const processPopDataFile = (d) : IPopDataRecord => {
         popestimate2014: +d.popestimate2014,
         popestimate2015: +d.popestimate2015,
         popestimate2016: +d.popestimate2016,
-        npopchg2010: +d.popestimate2010 - +d.estimatesbase2010,
-        npopchg2011: +d.popestimate2011 - +d.popestimate2010,
-        npopchg2012: +d.popestimate2012 - +d.popestimate2011,
-        npopchg2013: +d.popestimate2013 - +d.popestimate2012,
-        npopchg2014: +d.popestimate2014 - +d.popestimate2013,
-        npopchg2015: +d.popestimate2015 - +d.popestimate2014,
-        npopchg2016: +d.popestimate2016 - +d.popestimate2015
+        npopchg2010: (+d.popestimate2010 - +d.estimatesbase2010)/+d.popestimate2010,
+        npopchg2011: (+d.popestimate2011 - +d.popestimate2010)/+d.popestimate2011,
+        npopchg2012: (+d.popestimate2012 - +d.popestimate2011)/+d.popestimate2012,
+        npopchg2013: (+d.popestimate2013 - +d.popestimate2012)/+d.popestimate2013,
+        npopchg2014: (+d.popestimate2014 - +d.popestimate2013)/+d.popestimate2014,
+        npopchg2015: (+d.popestimate2015 - +d.popestimate2014)/+d.popestimate2015,
+        npopchg2016: (+d.popestimate2016 - +d.popestimate2015)/+d.popestimate2016
     };
 };
 
 const getPopColumnNameForYear = (year) => `popestimate${year}`;
+const getPopDeltaColumnNameForYear = (year) => `npopchg${year}`;
 
-const calculateMinMaxPopExtent = (data: Array<IPopDataRecord>) : Array<number> => {
+const calculateMinMaxExtent = (data: Array<IPopDataRecord>, accessor: (year: number) => string) : Array<number> => {
     const extentsForAllYears = [];
     for (let year = 2010; year <= MAX_YEAR; year++) {
-        const popColumnName = getPopColumnNameForYear(year);
-        const extentForYear = extent(data, (d) => d[popColumnName]);
+        const columnName = accessor(year);
+        const extentForYear = extent(data, (d) => d[columnName]);
         extentsForAllYears.push(extentForYear[0], extentForYear[1]);
     }
     return extent(extentsForAllYears);
@@ -77,7 +79,8 @@ AFRAME.registerComponent('extrude-by-population', {
                 accum[d.id] = d;
                 return accum;
             }, {});
-            this.minMaxPopExtent = calculateMinMaxPopExtent(data);
+            this.minMaxPopExtent = calculateMinMaxExtent(data, getPopColumnNameForYear);
+            this.minMaxPopDeltaExtent = calculateMinMaxExtent(data, getPopDeltaColumnNameForYear);
         }, (error) => { console.error(error); });
 
         const geoDataLoaderPromise = new Promise((resolve => {
@@ -99,15 +102,22 @@ AFRAME.registerComponent('extrude-by-population', {
         }
     },
     render: function () {
-        let extrudeGeometry = null;
-        let outlineVertices = [];
+        const popColumnName = getPopColumnNameForYear(this.data.year);
+        const popDeltaColumnName = getPopDeltaColumnNameForYear(this.data.year);
+
+        const extrudeScale = scaleLinear().domain(this.minMaxPopExtent).range([0, this.data.maxExtrudeHeight]);
+        const colorScheme = schemePiYG[5];
+        const colorScale = scaleQuantize<string>().domain(this.minMaxPopDeltaExtent).range(colorScheme);
+
         // Split the geoJson into features and render each one individually so that we can set a different
         // extrusion height for each based on the population.
         const features = this.geoProjectionComponent.geoJson.features;
-        const popColumnName = getPopColumnNameForYear(this.data.year);
-        const extrudeScale = scaleLinear().domain(this.minMaxPopExtent).range([0, this.data.maxExtrudeHeight]);
+        let extrudeGeometries = {};
+        let outlineVertices = [];
         features.forEach((feature) => {
             const population = this.populationData[feature.id][popColumnName];
+            const populationDelta = this.populationData[feature.id][popDeltaColumnName];
+            const color = colorScale(populationDelta);
             const extrudeAmount = extrudeScale(population);
             const extrudeSettings = {
                 amount: extrudeAmount,
@@ -125,21 +135,23 @@ AFRAME.registerComponent('extrude-by-population', {
             // Need to use ExtrudeGeometry here instead of ExtrudeBufferGeometry because the latter doesn't merge properly
             // in this version of Three.js
             const extrudedFeatureGeometry = new THREE.ExtrudeGeometry(countyShapes, extrudeSettings);
-            if (!extrudeGeometry) {
-                extrudeGeometry = extrudedFeatureGeometry;
+            if (!extrudeGeometries[color]) {
+                extrudeGeometries[color] = extrudedFeatureGeometry;
             } else {
-                extrudeGeometry.merge(extrudedFeatureGeometry);
+                extrudeGeometries[color].merge(extrudedFeatureGeometry);
             }
         });
 
-        // Convert the extrude geometry into a buffer geometry for better rendering performance
-        const extrudeBufferGeometry = new THREE.BufferGeometry();
-        extrudeBufferGeometry.fromGeometry(extrudeGeometry);
+        for (const color in extrudeGeometries) {
+            // Convert the extrude geometry into a buffer geometry for better rendering performance
+            const extrudeBufferGeometry = new THREE.BufferGeometry();
+            extrudeBufferGeometry.fromGeometry(extrudeGeometries[color]);
 
-        const material = this.el.components.material.material;
-        const sideMaterial = new THREE.MeshStandardMaterial( { color: 0xb3763e } );
-        const extrudedMap = new THREE.Mesh(extrudeBufferGeometry, [material, sideMaterial]);
-        this.el.setObject3D('map', extrudedMap);
+            const material = new THREE.MeshBasicMaterial({ color });
+            const sideMaterial = new THREE.MeshStandardMaterial({color: 0xb3763e});
+            const extrudedMap = new THREE.Mesh(extrudeBufferGeometry, [material, sideMaterial]);
+            this.el.setObject3D(color, extrudedMap);
+        }
 
         const outlineGeometry = new THREE.BufferGeometry();
         outlineGeometry.addAttribute('position', new THREE.Float32BufferAttribute(outlineVertices, 3));
