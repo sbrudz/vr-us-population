@@ -15,14 +15,15 @@
         <a-asset-item id="us-map" src="assets/cb_2016_us_county_20m-albers-pop.geo.json" />
     </a-assets>
 
-    <a-entity rotation="-90 0 0"
+    <a-entity id="map"
+              rotation="-90 0 0"
               material="color: red;"
               geo-projection="
                   src: #us-map;
                   projection: geoIdentity;
                   height: 10;
                   width: 20;"
-              data-for-map
+              extrude-by-population="year: 2010;"
     ></a-entity>
 
     <a-sky color="#ECECEC"></a-sky>

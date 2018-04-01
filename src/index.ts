@@ -5,11 +5,11 @@ import { scaleLinear } from "d3-scale";
 const THREE = AFRAME.THREE;
 
 
-AFRAME.registerComponent('data-for-map', {
+AFRAME.registerComponent('extrude-by-population', {
     dependencies: ['geo-projection'],
     schema: {
         year: {
-            default: '2016'
+            default: '2011'
         },
         maxExtrudeHeight: {
             default: 2
@@ -25,7 +25,7 @@ AFRAME.registerComponent('data-for-map', {
         if (!this.geoProjectionComponent.geoJson) {
             return;
         }
-        if (this.data.maxExtrudeHeight !== oldData.maxExtrudeHeight) {
+        if (this.data.maxExtrudeHeight !== oldData.maxExtrudeHeight || this.data.year !== oldData.year) {
             this.geoJsonReady();
         }
     },
@@ -36,7 +36,7 @@ AFRAME.registerComponent('data-for-map', {
         // Split the geoJson into features and render each one individually so that we can set a different
         // extrusion height for each based on the population.
         const features = this.geoProjectionComponent.geoJson.features;
-        const popColumnName = `pop${this.data.year}`;
+        const popColumnName = `popestimate${this.data.year}`;
         // TODO: this should be the min/max for all years so heights have consistent meanings
         const popDomain = extent(features, (d:any) => (+d.properties[popColumnName]));
         const extrudeScale = scaleLinear().domain(popDomain).range([0, this.data.maxExtrudeHeight]);

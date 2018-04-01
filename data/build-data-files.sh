@@ -28,15 +28,26 @@ ndjson-map 'd.id = d.properties.GEOID, d' \
   > temp/cb_2016_us_county_20m-albers.id.geo.ndjson
 
 # download the population estimates for each county
-if [ ! -e 2016_us_county_pop.json ]; then
-    curl "https://api.census.gov/data/2016/pep/population?get=POP,GEONAME&for=county:*&DATE=9&key=${CENSUS_GOV_API_KEY}" \
-      -o 2016_us_county_pop.json
+if [ ! -e 2016my_us_county_pop.json ]; then
+    curl "https://api.census.gov/data/2016/pep/population?get=DATE,POP,GEONAME&for=county:*&key=${CENSUS_GOV_API_KEY}" \
+      -o 2016my_us_county_pop.json
 fi
 
 # convert json from arrays into objects
-ndjson-cat 2016_us_county_pop.json \
+ndjson-cat 2016my_us_county_pop.json \
   | ndjson-split 'd.slice(1)' \
-  | ndjson-map '{id: d[3] + d[4], county: d[1], pop2016: +d[0]}' \
+  | ndjson-map '{id: d[3] + d[4], county: d[2], date: d[0], pop: +d[1]}' \
+  | sed 's/"date":"1","pop"/"census2010pop"/g' \
+  | sed 's/"date":"2","pop"/"estimatesbase2010"/g' \
+  | sed 's/"date":"3","pop"/"popestimate2010"/g' \
+  | sed 's/"date":"4","pop"/"popestimate2011"/g' \
+  | sed 's/"date":"5","pop"/"popestimate2012"/g' \
+  | sed 's/"date":"6","pop"/"popestimate2013"/g' \
+  | sed 's/"date":"7","pop"/"popestimate2014"/g' \
+  | sed 's/"date":"8","pop"/"popestimate2015"/g' \
+  | sed 's/"date":"9","pop"/"popestimate2016"/g' \
+  | ndjson-reduce 'idx = p.findIndex((el) => (el.id === d.id)), idx > -1 ? p[idx] = Object.assign(p[idx], d) : p.push(d), p' '[]' \
+  | ndjson-split \
   > temp/2016_us_county_pop.ndjson
 
 # join the population data into the geojson
@@ -46,7 +57,7 @@ ndjson-join 'd.id' \
   > temp/cb_2016_us_county_20m-albers-join.ndjson
 
 # consolidate the properties for each county into a single properties object
-ndjson-map 'd[0].properties = {county: d[1].county, pop2016: d[1].pop2016}, d[0]' \
+ndjson-map 'd[0].properties = d[1], d[0]' \
   < temp/cb_2016_us_county_20m-albers-join.ndjson \
   > temp/cb_2016_us_county_20m-albers-pop.ndjson
 
