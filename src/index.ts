@@ -1,6 +1,7 @@
 import "aframe-geo-projection-component";
+import "./legend";
 import { extent } from "d3-array";
-import { scaleLinear, scaleQuantize } from "d3-scale";
+import { scaleLinear, scaleQuantile } from "d3-scale";
 import { csv } from "d3-fetch";
 import { schemePiYG } from "d3-scale-chromatic";
 
@@ -79,8 +80,13 @@ AFRAME.registerComponent('extrude-by-population', {
                 accum[d.id] = d;
                 return accum;
             }, {});
+
             this.minMaxPopExtent = calculateMinMaxExtent(data, getPopColumnNameForYear);
-            this.minMaxPopDeltaExtent = calculateMinMaxExtent(data, getPopDeltaColumnNameForYear);
+
+            const minMaxPopDeltaExtent = calculateMinMaxExtent(data, getPopDeltaColumnNameForYear);
+            this.colorScale = scaleQuantile<string>().domain(minMaxPopDeltaExtent).range(schemePiYG[5]);
+            this.el.emit('set-legend-color-scale', { colorScale: this.colorScale }, true);
+
         }, (error) => { console.error(error); });
 
         const geoDataLoaderPromise = new Promise((resolve => {
@@ -106,8 +112,8 @@ AFRAME.registerComponent('extrude-by-population', {
         const popDeltaColumnName = getPopDeltaColumnNameForYear(this.data.year);
 
         const extrudeScale = scaleLinear().domain(this.minMaxPopExtent).range([0, this.data.maxExtrudeHeight]);
-        const colorScheme = schemePiYG[5];
-        const colorScale = scaleQuantize<string>().domain(this.minMaxPopDeltaExtent).range(colorScheme);
+
+        this.el.emit('update-legend-year', { year: this.data.year }, true);
 
         // Split the geoJson into features and render each one individually so that we can set a different
         // extrusion height for each based on the population.
@@ -117,7 +123,7 @@ AFRAME.registerComponent('extrude-by-population', {
         features.forEach((feature) => {
             const population = this.populationData[feature.id][popColumnName];
             const populationDelta = this.populationData[feature.id][popDeltaColumnName];
-            const color = colorScale(populationDelta);
+            const color = this.colorScale(populationDelta);
             const extrudeAmount = extrudeScale(population);
             const extrudeSettings = {
                 amount: extrudeAmount,

@@ -15,6 +15,17 @@
         <a-asset-item id="us-map" src="assets/cb_2016_us_county_20m-albers-trim.geo.json" />
     </a-assets>
 
+    <a-plane id="legend"
+             material="color: black;"
+             rotation="0 0 0"
+             position="0 1.5 -4.5"
+             width="4"
+             height="2"
+             legend>
+        <a-text id="title" height="0.5" position="-1.75 0.5 0" value="U.S. Population by County"></a-text>
+        <a-text id="year" height="0.5" position="1 0.5 0" value="Loading..."></a-text>
+    </a-plane>
+
     <a-entity id="map"
               rotation="-90 0 0"
               material="color: red;"
@@ -23,7 +34,7 @@
                   projection: geoIdentity;
                   height: 10;
                   width: 20;"
-              extrude-by-population="year: 2013;"
+              extrude-by-population="year: 2012;"
     ></a-entity>
 
     <a-sky color="#ECECEC"></a-sky>
