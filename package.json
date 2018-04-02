@@ -25,6 +25,7 @@
     "aframe-geo-projection-component": "^1.1.0",
     "d3-array": "^1.2.1",
     "d3-fetch": "^1.1.0",
+    "d3-format": "^1.2.2",
     "d3-scale": "^2.0.0",
     "d3-scale-chromatic": "^1.2.0"
   },

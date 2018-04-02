@@ -1,3 +1,5 @@
+import { format } from 'd3-format';
+import { pairs } from 'd3-array';
 import Entity = AFrame.Entity;
 
 AFRAME.registerComponent('legend', {
@@ -14,9 +16,19 @@ AFRAME.registerComponent('legend', {
         yearEl.setAttribute('value', event.detail.year);
     },
     createLegendColorScale: function (event) {
-        const quantiles = event.detail.colorScale.quantiles();
-        const {minVal, maxVal} = event.detail.colorScale.domain();
-        const colors = event.detail.colorScale.range();
+        const colorScale = event.detail.colorScale;
+        const quantiles = colorScale.quantiles();
+        const [minVal, maxVal] = colorScale.domain();
+        const thresholds = [minVal, ...quantiles, maxVal];
+        const pairs2 = pairs(thresholds);
+        const thresholdsPerColor = pairs2.reduce((acc, threshold) => {
+            const lowerBound = threshold[0];
+            const color = colorScale(lowerBound);
+            acc[color] = threshold;
+            return acc;
+        }, {});
+        console.log(thresholdsPerColor);
+        const colors = colorScale.range();
 
         const containerWidth = Number.parseInt(this.el.getAttribute('width'));
         const containerHeight = Number.parseInt(this.el.getAttribute('height'));
@@ -30,6 +42,8 @@ AFRAME.registerComponent('legend', {
         header.setAttribute('scale', '0.7 0.7 0.7');
         header.setAttribute('value', 'Percentage population change from previous year');
         this.el.appendChild(header);
+
+        const formatter = format(".0%");
         for (let color of colors) {
             const parent = document.createElement('a-entity') as Entity;
             parent.setAttribute('geometry', {primitive: 'plane', width: width, height: parentHeight});
@@ -46,7 +60,8 @@ AFRAME.registerComponent('legend', {
             label.setAttribute('position', `0 ${labelYPos} 0`);
             label.setAttribute('align', 'center');
             label.setAttribute('scale', '0.6 0.6 0.6');
-            label.setAttribute('value', '12% to 14%');
+            const colorThreshold = thresholdsPerColor[color];
+            label.setAttribute('value', `${formatter(colorThreshold[0])} to ${formatter(colorThreshold[1])}`);
             parent.appendChild(label);
             this.el.appendChild(parent);
             currXPosition += width;
