@@ -5,6 +5,8 @@
     <title>Visualization of U.S. Population by County</title>
     <meta name="description" content="Visualization of U.S. Population by County">
     <script src="https://aframe.io/releases/0.7.1/aframe.min.js"></script>
+    <script src="//cdn.rawgit.com/donmccurdy/aframe-extras/v3.12.4/dist/aframe-extras.min.js"></script>
+    <script src="https://unpkg.com/super-hands@2.1.0/dist/super-hands.min.js"></script>
     <%
     // webpack inserts bundled assets here
     %>
@@ -38,6 +40,10 @@
     ></a-entity>
 
     <a-sky color="#ECECEC"></a-sky>
+    <a-locomotor>
+        <a-entity hand-controls="left" super-hands></a-entity>
+        <a-entity hand-controls="right" super-hands></a-entity>
+    </a-locomotor>
 </a-scene>
 </body>
 </html>
