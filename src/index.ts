@@ -151,13 +151,11 @@ AFRAME.registerComponent('extrude-by-population', {
         });
 
         for (const color in extrudeGeometries) {
-            // Convert the extrude geometry into a buffer geometry for better rendering performance
-            const extrudeBufferGeometry = new THREE.BufferGeometry();
-            extrudeBufferGeometry.fromGeometry(extrudeGeometries[color]);
+            const extrudeGeometry = extrudeGeometries[color];
 
             const material = new THREE.MeshBasicMaterial({ color });
             const sideMaterial = new THREE.MeshStandardMaterial({color: 0xb3763e});
-            const extrudedMap = new THREE.Mesh(extrudeBufferGeometry, [material, sideMaterial]);
+            const extrudedMap = new THREE.Mesh(extrudeGeometry, [material, sideMaterial]);
             this.el.setObject3D(color, extrudedMap);
         }
 
