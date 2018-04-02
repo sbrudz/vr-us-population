@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Visualization of U.S. Population by County</title>
+    <meta name="description" content="Visualization of U.S. Population by County">
+    <script src="https://aframe.io/releases/0.7.1/aframe.min.js"></script>
+    <script src="//cdn.rawgit.com/donmccurdy/aframe-extras/v3.12.4/dist/aframe-extras.min.js"></script>
+    <script src="https://unpkg.com/super-hands@2.1.0/dist/super-hands.min.js"></script>
+    
+<script type="text/javascript" src="bundle.js"></script></head>
+<body>
+<a-scene>
+    <a-assets>
+        <a-asset-item id="us-map" src="assets/cb_2016_us_county_20m-albers-trim.geo.json" />
+    </a-assets>
+
+    <a-plane id="legend"
+             material="color: black;"
+             rotation="0 0 0"
+             position="0 1.5 -4.5"
+             width="4"
+             height="2"
+             legend>
+        <a-text id="title" height="0.5" position="-1.75 0.5 0" value="U.S. Population by County"></a-text>
+        <a-text id="year" height="0.5" position="1 0.5 0" value="Loading..."></a-text>
+    </a-plane>
+
+    <a-entity id="map"
+              rotation="-90 0 0"
+              material="color: red;"
+              geo-projection="
+                  src: #us-map;
+                  projection: geoIdentity;
+                  height: 10;
+                  width: 20;"
+              extrude-by-population="year: 2016;"
+    ></a-entity>
+
+    <a-sky color="#ECECEC"></a-sky>
+    <a-locomotor>
+        <a-entity hand-controls="left" super-hands></a-entity>
+        <a-entity hand-controls="right" super-hands></a-entity>
+    </a-locomotor>
+</a-scene>
+</body>
+</html>
