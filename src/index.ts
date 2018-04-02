@@ -1,7 +1,7 @@
 import "aframe-geo-projection-component";
 import "./legend";
 import { extent } from "d3-array";
-import { scaleLinear, scaleQuantile } from "d3-scale";
+import { scaleLinear, scaleThreshold } from "d3-scale";
 import { csv } from "d3-fetch";
 import { schemePiYG } from "d3-scale-chromatic";
 
@@ -65,7 +65,7 @@ AFRAME.registerComponent('extrude-by-population', {
     dependencies: ['geo-projection'],
     schema: {
         year: {
-            default: '2010'
+            default: '2011'
         },
         maxExtrudeHeight: {
             default: 2
@@ -83,9 +83,11 @@ AFRAME.registerComponent('extrude-by-population', {
 
             this.minMaxPopExtent = calculateMinMaxExtent(data, getPopColumnNameForYear);
 
-            const minMaxPopDeltaExtent = calculateMinMaxExtent(data, getPopDeltaColumnNameForYear);
-            this.colorScale = scaleQuantile<string>().domain(minMaxPopDeltaExtent).range(schemePiYG[5]);
-            this.el.emit('set-legend-color-scale', { colorScale: this.colorScale }, true);
+            const [minPopDelta, maxPopDelta] = calculateMinMaxExtent(data, getPopDeltaColumnNameForYear);
+            const thresholds = [-0.10, -0.03, 0.03, 0.10];
+            this.colorScale = scaleThreshold<number, string>().domain(thresholds).range(schemePiYG[5]);
+            const allThresholds = [minPopDelta, ...thresholds, maxPopDelta];
+            this.el.emit('set-legend-color-scale', { colorScale: this.colorScale, thresholds: allThresholds }, true);
 
         }, (error) => { console.error(error); });
 

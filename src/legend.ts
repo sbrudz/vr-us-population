@@ -17,17 +17,13 @@ AFRAME.registerComponent('legend', {
     },
     createLegendColorScale: function (event) {
         const colorScale = event.detail.colorScale;
-        const quantiles = colorScale.quantiles();
-        const [minVal, maxVal] = colorScale.domain();
-        const thresholds = [minVal, ...quantiles, maxVal];
-        const pairs2 = pairs(thresholds);
-        const thresholdsPerColor = pairs2.reduce((acc, threshold) => {
-            const lowerBound = threshold[0];
-            const color = colorScale(lowerBound);
-            acc[color] = threshold;
+        const thresholds = event.detail.thresholds;
+        const thresholdsPerColor = pairs<number>(thresholds).reduce((acc, curr: Array<number>) => {
+            const midPoint = (curr[1] + curr[0])/2;
+            const color = colorScale(midPoint);
+            acc[color] = curr;
             return acc;
         }, {});
-        console.log(thresholdsPerColor);
         const colors = colorScale.range();
 
         const containerWidth = Number.parseInt(this.el.getAttribute('width'));
