@@ -20,7 +20,7 @@
 <body>
 <a-scene>
     <a-assets>
-        <a-asset-item id="us-map" src="assets/cb_2016_us_county_20m-albers-trim.geo.json" />
+        <a-asset-item id="us-map" src="assets/cb_2016_us_county_20m-albers-quantized.topo.json" />
     </a-assets>
 
     <a-plane id="legend"
@@ -39,6 +39,8 @@
               material="color: red;"
               geo-projection="
                   src: #us-map;
+                  srcType: topojson;
+                  isCCW: true;
                   projection: geoIdentity;
                   height: 10;
                   width: 20;"

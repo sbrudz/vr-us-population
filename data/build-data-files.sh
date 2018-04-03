@@ -5,6 +5,7 @@
 # npm install -g d3-geo-projection
 # npm install -g ndjson-cli
 # npm install -g d3-dsv
+# npm install -g topojson
 
 source ../.env
 
@@ -72,6 +73,19 @@ ndjson-reduce 'p.features.push(d), p' '{type: "FeatureCollection", features: []}
   < temp/cb_2016_us_county_20m-albers-trim.ndjson \
   > temp/cb_2016_us_county_20m-albers-trim.geo.json
 
+geo2topo -n \
+  counties=temp/cb_2016_us_county_20m-albers-trim.ndjson \
+  > temp/cb_2016_us_county_20m-albers-trim.topo.json
+
+toposimplify -p 1 -f \
+  < temp/cb_2016_us_county_20m-albers-trim.topo.json \
+  > temp/cb_2016_us_county_20m-albers-simple.topo.json
+
+topoquantize 1e5 \
+  < temp/cb_2016_us_county_20m-albers-simple.topo.json \
+  > temp/cb_2016_us_county_20m-albers-quantized.topo.json
+
 # copy the geojson and population data into the assets folder so that it can be visualized
 cp temp/cb_2016_us_county_20m-albers-trim.geo.json ../src/assets
+cp temp/cb_2016_us_county_20m-albers-quantized.topo.json ../src/assets
 cp temp/2016_us_county_pop.csv ../src/assets

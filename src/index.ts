@@ -133,8 +133,18 @@ AFRAME.registerComponent('extrude-by-population', {
             };
 
             const mapRenderContext = this.geoProjectionComponent.renderer.renderToContext(feature, this.geoProjectionComponent.projection);
-            const countyShapes = mapRenderContext.toShapes(this.data.isCCW);
+            let countyShapes = mapRenderContext.toShapes(this.geoProjectionComponent.data.isCCW);
 
+            if (countyShapes.find(s => s.getPoints().length <= 3)) {
+                // ensure all shapes have at least 3 unique points
+                countyShapes = countyShapes
+                    .map(s => new Set(s.getPoints().map(JSON.stringify)).size)
+                    .filter(p => p >= 3);
+                if (countyShapes.length <= 0) {
+                    console.warn(`Skipping county with id ${feature.id} because it is too small to triangulate`);
+                    return;
+                }
+            }
             // Gather the outline of the county and set the height of the outline to the extrude level
             // so that the top of the county is outlined
             outlineVertices = outlineVertices.concat(mapRenderContext.toVertices(extrudeAmount));
