@@ -1,10 +1,23 @@
 # Visualization of U.S. Population in VR
 
-This is a visualization of the population of the United States using WebVR.
+A visualization of the population by county of the United States using WebVR.
+
+[![VR U.S. Population](./src/assets/preview.png)](https://sbrudz.github.io/vr-us-population/)
 
 ## About the Data
 
-"This product uses the Census Bureau Data API but is not endorsed or certified by the Census Bureau."
+The visualization uses data from [census.gov](https://census.gov) for both the map and the population estimates.
+The `data` subdirectory contains the source data files used in the visualization.  
+
+The script `data/build-data-files.sh`
+provides a reproducable way to download and process the data files into the versions in `src/assets` that are used
+directly in the visualization.  Note that build-data-files.sh must be run from within the `data` subdirectory.  It also
+requires several globally installed npm packages.  See the header of the file for details.
+
+If you want to re-download the data files, you'll need a [census.gov API key](https://api.census.gov/data/key_signup.html).
+Make a copy of .env.example, name it .env, and put your API key there.
+
+Finally, per the instructions on census.gov, I must state that "This product uses the Census Bureau Data API but is not endorsed or certified by the Census Bureau."
 
 ### Local Development
 
@@ -17,9 +30,6 @@ On Mac OS X, it's recommended to use [Homebrew](http://brew.sh/) to install Node
 To install the Node dependencies:
 
     npm install
-
-If you want to process the data files, you'll need a census.gov API key.
-Make a copy of .env.example, name it .env, and put your API key there.
 
 To serve the site from a simple Node development server:
 
