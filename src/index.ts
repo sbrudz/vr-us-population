@@ -3,7 +3,7 @@ import "./legend";
 import { extent } from "d3-array";
 import { scaleLinear, scaleThreshold } from "d3-scale";
 import { csv } from "d3-fetch";
-import { schemePiYG } from "d3-scale-chromatic";
+import { schemeBrBG } from "d3-scale-chromatic";
 
 const THREE = AFRAME.THREE;
 const MAX_YEAR = 2016;
@@ -39,12 +39,12 @@ const processPopDataFile = (d) : IPopDataRecord => {
         popestimate2015: +d.popestimate2015,
         popestimate2016: +d.popestimate2016,
         npopchg2010: (+d.popestimate2010 - +d.estimatesbase2010)/+d.popestimate2010,
-        npopchg2011: (+d.popestimate2011 - +d.popestimate2010)/+d.popestimate2011,
-        npopchg2012: (+d.popestimate2012 - +d.popestimate2011)/+d.popestimate2012,
-        npopchg2013: (+d.popestimate2013 - +d.popestimate2012)/+d.popestimate2013,
-        npopchg2014: (+d.popestimate2014 - +d.popestimate2013)/+d.popestimate2014,
-        npopchg2015: (+d.popestimate2015 - +d.popestimate2014)/+d.popestimate2015,
-        npopchg2016: (+d.popestimate2016 - +d.popestimate2015)/+d.popestimate2016
+        npopchg2011: (+d.popestimate2011 - +d.estimatesbase2010)/+d.popestimate2011,
+        npopchg2012: (+d.popestimate2012 - +d.estimatesbase2010)/+d.popestimate2012,
+        npopchg2013: (+d.popestimate2013 - +d.estimatesbase2010)/+d.popestimate2013,
+        npopchg2014: (+d.popestimate2014 - +d.estimatesbase2010)/+d.popestimate2014,
+        npopchg2015: (+d.popestimate2015 - +d.estimatesbase2010)/+d.popestimate2015,
+        npopchg2016: (+d.popestimate2016 - +d.estimatesbase2010)/+d.popestimate2016
     };
 };
 
@@ -84,8 +84,8 @@ AFRAME.registerComponent('extrude-by-population', {
             this.minMaxPopExtent = calculateMinMaxExtent(data, getPopColumnNameForYear);
 
             const [minPopDelta, maxPopDelta] = calculateMinMaxExtent(data, getPopDeltaColumnNameForYear);
-            const thresholds = [-0.10, -0.03, 0.03, 0.10];
-            this.colorScale = scaleThreshold<number, string>().domain(thresholds).range(schemePiYG[5]);
+            const thresholds = [-0.20, -0.12, -0.02, 0.02, 0.12, 0.25];
+            this.colorScale = scaleThreshold<number, string>().domain(thresholds).range(schemeBrBG[7]);
             const allThresholds = [minPopDelta, ...thresholds, maxPopDelta];
             this.el.emit('set-legend-color-scale', { colorScale: this.colorScale, thresholds: allThresholds }, true);
 
