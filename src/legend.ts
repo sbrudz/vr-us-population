@@ -36,7 +36,8 @@ AFRAME.registerComponent('legend', {
         const header = document.createElement('a-text') as Entity;
         header.setAttribute('align', 'center');
         header.setAttribute('scale', '0.7 0.7 0.7');
-        header.setAttribute('value', 'Percentage population change from previous year');
+        header.setAttribute('position', `0 0 0.01`);
+        header.setAttribute('value', 'Percentage population change from 2010');
         this.el.appendChild(header);
 
         const formatter = format(".0%");
@@ -53,11 +54,11 @@ AFRAME.registerComponent('legend', {
             box.setAttribute('depth', '0.1');
             parent.appendChild(box);
             const label = document.createElement('a-text') as Entity;
-            label.setAttribute('position', `0 ${labelYPos} 0`);
+            label.setAttribute('position', `0 ${labelYPos} 0.01`);
             label.setAttribute('align', 'center');
             label.setAttribute('scale', '0.6 0.6 0.6');
             const colorThreshold = thresholdsPerColor[color];
-            label.setAttribute('value', `${formatter(colorThreshold[0])} to ${formatter(colorThreshold[1])}`);
+            label.setAttribute('value', `${formatter(colorThreshold[0])}\nto\n${formatter(colorThreshold[1])}`);
             parent.appendChild(label);
             this.el.appendChild(parent);
             currXPosition += width;

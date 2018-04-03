@@ -3,7 +3,7 @@ import "./legend";
 import { extent } from "d3-array";
 import { scaleLinear, scaleThreshold } from "d3-scale";
 import { csv } from "d3-fetch";
-import { schemePiYG } from "d3-scale-chromatic";
+import { schemeBrBG } from "d3-scale-chromatic";
 
 const THREE = AFRAME.THREE;
 const MAX_YEAR = 2016;
@@ -39,12 +39,12 @@ const processPopDataFile = (d) : IPopDataRecord => {
         popestimate2015: +d.popestimate2015,
         popestimate2016: +d.popestimate2016,
         npopchg2010: (+d.popestimate2010 - +d.estimatesbase2010)/+d.popestimate2010,
-        npopchg2011: (+d.popestimate2011 - +d.popestimate2010)/+d.popestimate2011,
-        npopchg2012: (+d.popestimate2012 - +d.popestimate2011)/+d.popestimate2012,
-        npopchg2013: (+d.popestimate2013 - +d.popestimate2012)/+d.popestimate2013,
-        npopchg2014: (+d.popestimate2014 - +d.popestimate2013)/+d.popestimate2014,
-        npopchg2015: (+d.popestimate2015 - +d.popestimate2014)/+d.popestimate2015,
-        npopchg2016: (+d.popestimate2016 - +d.popestimate2015)/+d.popestimate2016
+        npopchg2011: (+d.popestimate2011 - +d.estimatesbase2010)/+d.popestimate2011,
+        npopchg2012: (+d.popestimate2012 - +d.estimatesbase2010)/+d.popestimate2012,
+        npopchg2013: (+d.popestimate2013 - +d.estimatesbase2010)/+d.popestimate2013,
+        npopchg2014: (+d.popestimate2014 - +d.estimatesbase2010)/+d.popestimate2014,
+        npopchg2015: (+d.popestimate2015 - +d.estimatesbase2010)/+d.popestimate2015,
+        npopchg2016: (+d.popestimate2016 - +d.estimatesbase2010)/+d.popestimate2016
     };
 };
 
@@ -84,8 +84,8 @@ AFRAME.registerComponent('extrude-by-population', {
             this.minMaxPopExtent = calculateMinMaxExtent(data, getPopColumnNameForYear);
 
             const [minPopDelta, maxPopDelta] = calculateMinMaxExtent(data, getPopDeltaColumnNameForYear);
-            const thresholds = [-0.10, -0.03, 0.03, 0.10];
-            this.colorScale = scaleThreshold<number, string>().domain(thresholds).range(schemePiYG[5]);
+            const thresholds = [-0.20, -0.12, -0.02, 0.02, 0.12, 0.25];
+            this.colorScale = scaleThreshold<number, string>().domain(thresholds).range(schemeBrBG[7]);
             const allThresholds = [minPopDelta, ...thresholds, maxPopDelta];
             this.el.emit('set-legend-color-scale', { colorScale: this.colorScale, thresholds: allThresholds }, true);
 
@@ -133,8 +133,18 @@ AFRAME.registerComponent('extrude-by-population', {
             };
 
             const mapRenderContext = this.geoProjectionComponent.renderer.renderToContext(feature, this.geoProjectionComponent.projection);
-            const countyShapes = mapRenderContext.toShapes(this.data.isCCW);
+            let countyShapes = mapRenderContext.toShapes(this.geoProjectionComponent.data.isCCW);
 
+            if (countyShapes.find(s => s.getPoints().length <= 3)) {
+                // ensure all shapes have at least 3 unique points
+                countyShapes = countyShapes
+                    .map(s => new Set(s.getPoints().map(JSON.stringify)).size)
+                    .filter(p => p >= 3);
+                if (countyShapes.length <= 0) {
+                    console.warn(`Skipping county with id ${feature.id} because it is too small to triangulate`);
+                    return;
+                }
+            }
             // Gather the outline of the county and set the height of the outline to the extrude level
             // so that the top of the county is outlined
             outlineVertices = outlineVertices.concat(mapRenderContext.toVertices(extrudeAmount));
@@ -153,9 +163,9 @@ AFRAME.registerComponent('extrude-by-population', {
         for (const color in extrudeGeometries) {
             const extrudeGeometry = extrudeGeometries[color];
 
-            const material = new THREE.MeshBasicMaterial({ color });
-            const sideMaterial = new THREE.MeshStandardMaterial({color: 0xb3763e});
-            const extrudedMap = new THREE.Mesh(extrudeGeometry, [material, sideMaterial]);
+            const material = new THREE.MeshLambertMaterial({ color });
+            // const sideMaterial = new THREE.MeshBasicMaterial({color: 0xb3763e});
+            const extrudedMap = new THREE.Mesh(extrudeGeometry, material);
             this.el.setObject3D(color, extrudedMap);
         }
 
