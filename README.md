@@ -4,7 +4,7 @@ A visualization of the United States population by county using WebVR.
 
 [![VR U.S. Population](./src/assets/preview.png)](https://sbrudz.github.io/vr-us-population/)
 
-If you have an HTC Vive or Occulus Rift, you can use the controllers to move and scale the visualization.
+**Note**: This is still a work in progress and I'm in the process of ironing out performance issues.
 
 ## About the Data
 
