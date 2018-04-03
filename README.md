@@ -1,15 +1,16 @@
 # Visualization of U.S. Population in VR
 
-A visualization of the United States population by county using WebVR.
+A visualization of the United States population by county using WebVR.  The height of each county represents the number of people.
+The colors show the estimated percentage change in population since July 1, 2010.
 
 [![VR U.S. Population](./src/assets/preview.png)](https://sbrudz.github.io/vr-us-population/)
 
-**Note**: This is still a work in progress and I'm in the process of ironing out performance issues.
+If you have an HTC Vive or Occulus Rift, you can use the controllers to move and scale the visualization using the [super hands component](https://github.com/wmurphyrd/aframe-super-hands-component).
 
 ## About the Data
 
 The visualization uses data from [census.gov](https://census.gov) for both the map and the population estimates.
-The `data` subdirectory contains the source data files used in the visualization.  
+The `data` subdirectory contains the source data files used in the visualization.
 
 The script `data/build-data-files.sh`
 provides a reproducable way to download and process the data files into the versions in `src/assets` that are used
