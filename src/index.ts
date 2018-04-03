@@ -163,9 +163,9 @@ AFRAME.registerComponent('extrude-by-population', {
         for (const color in extrudeGeometries) {
             const extrudeGeometry = extrudeGeometries[color];
 
-            const material = new THREE.MeshBasicMaterial({ color });
-            const sideMaterial = new THREE.MeshStandardMaterial({color: 0xb3763e});
-            const extrudedMap = new THREE.Mesh(extrudeGeometry, [material, sideMaterial]);
+            const material = new THREE.MeshLambertMaterial({ color });
+            // const sideMaterial = new THREE.MeshBasicMaterial({color: 0xb3763e});
+            const extrudedMap = new THREE.Mesh(extrudeGeometry, material);
             this.el.setObject3D(color, extrudedMap);
         }
 
