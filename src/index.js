@@ -8,26 +8,7 @@ import { schemeBrBG } from "d3-scale-chromatic";
 const THREE = AFRAME.THREE;
 const MAX_YEAR = 2016;
 
-interface IPopDataRecord {
-    id: string,
-    county: string,
-    popestimate2010: number,
-    popestimate2011: number,
-    popestimate2012: number,
-    popestimate2013: number,
-    popestimate2014: number,
-    popestimate2015: number,
-    popestimate2016: number,
-    npopchg2010: number,
-    npopchg2011: number,
-    npopchg2012: number,
-    npopchg2013: number,
-    npopchg2014: number,
-    npopchg2015: number,
-    npopchg2016: number
-}
-
-const processPopDataFile = (d) : IPopDataRecord => {
+const processPopDataFile = (d) => {
     return {
         id: d.id,
         county: d.county,
@@ -51,7 +32,7 @@ const processPopDataFile = (d) : IPopDataRecord => {
 const getPopColumnNameForYear = (year) => `popestimate${year}`;
 const getPopDeltaColumnNameForYear = (year) => `npopchg${year}`;
 
-const calculateMinMaxExtent = (data: Array<IPopDataRecord>, accessor: (year: number) => string) : Array<number> => {
+const calculateMinMaxExtent = (data, accessor) => {
     const extentsForAllYears = [];
     for (let year = 2010; year <= MAX_YEAR; year++) {
         const columnName = accessor(year);
@@ -75,7 +56,7 @@ AFRAME.registerComponent('extrude-by-population', {
         this.geoProjectionComponent = this.el.components['geo-projection'];
         this.ready = false;
 
-        const csvLoaderPromise = csv('assets/2016_us_county_pop.csv', processPopDataFile).then((data: Array<IPopDataRecord>) => {
+        const csvLoaderPromise = csv('assets/2016_us_county_pop.csv', processPopDataFile).then((data) => {
             this.populationData = data.reduce((accum, d) => {
                 accum[d.id] = d;
                 return accum;
@@ -85,7 +66,7 @@ AFRAME.registerComponent('extrude-by-population', {
 
             const [minPopDelta, maxPopDelta] = calculateMinMaxExtent(data, getPopDeltaColumnNameForYear);
             const thresholds = [-0.20, -0.12, -0.02, 0.02, 0.12, 0.25];
-            this.colorScale = scaleThreshold<number, string>().domain(thresholds).range(schemeBrBG[7]);
+            this.colorScale = scaleThreshold().domain(thresholds).range(schemeBrBG[7]);
             const allThresholds = [minPopDelta, ...thresholds, maxPopDelta];
             this.el.emit('set-legend-color-scale', { colorScale: this.colorScale, thresholds: allThresholds }, true);
 

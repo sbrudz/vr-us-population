@@ -5,17 +5,27 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 module.exports = {
     mode: "development",
     devtool: "source-map",
-    entry: "./src/index.ts",
+    entry: "./src/index.js",
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: "bundle.js"
     },
     resolve: {
-        extensions: [".ts", ".tsx", ".js"]
+        extensions: [".js"]
     },
     module: {
         rules: [
-            {test: /\.tsx?$/, loader: "ts-loader", exclude: [/node_modules/, 'src/assets']}
+            {
+                test: /\.js$/,
+                exclude: [/node_modules/, 'src/assets'],
+                use: {
+                  loader: 'babel-loader',
+                  options: {
+                    presets: ['@babel/preset-env'],
+                    plugins: [require('@babel/plugin-proposal-object-rest-spread')]
+                  }
+                }
+            }
         ]
     },
     plugins: [

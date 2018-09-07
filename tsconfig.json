@@ -1,9 +1,0 @@
-{
-  "compilerOptions": {
-    "sourceMap": true,
-    "target": "es6",
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitAny": false,
-    "noImplicitReturns": true
-  }
-}

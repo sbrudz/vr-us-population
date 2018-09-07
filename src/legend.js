@@ -1,6 +1,5 @@
 import { format } from 'd3-format';
 import { pairs } from 'd3-array';
-import Entity = AFrame.Entity;
 
 AFRAME.registerComponent('legend', {
     init: function () {
@@ -18,7 +17,7 @@ AFRAME.registerComponent('legend', {
     createLegendColorScale: function (event) {
         const colorScale = event.detail.colorScale;
         const thresholds = event.detail.thresholds;
-        const thresholdsPerColor = pairs<number>(thresholds).reduce((acc, curr: Array<number>) => {
+        const thresholdsPerColor = pairs(thresholds).reduce((acc, curr) => {
             const midPoint = (curr[1] + curr[0])/2;
             const color = colorScale(midPoint);
             acc[color] = curr;
@@ -33,7 +32,7 @@ AFRAME.registerComponent('legend', {
         const parentHeight = containerHeight/2;
         const boxYPos = parentHeight/4;
         const labelYPos = -(parentHeight/4);
-        const header = document.createElement('a-text') as Entity;
+        const header = document.createElement('a-text');
         header.setAttribute('align', 'center');
         header.setAttribute('scale', '0.7 0.7 0.7');
         header.setAttribute('position', `0 0 0.01`);
@@ -42,18 +41,18 @@ AFRAME.registerComponent('legend', {
 
         const formatter = format(".0%");
         for (let color of colors) {
-            const parent = document.createElement('a-entity') as Entity;
+            const parent = document.createElement('a-entity');
             parent.setAttribute('geometry', {primitive: 'plane', width: width, height: parentHeight});
             parent.setAttribute('position', `${currXPosition} ${-containerHeight/4} 0`);
             parent.setAttribute('material', 'visible', false);
-            const box = document.createElement('a-box') as Entity;
+            const box = document.createElement('a-box');
             box.setAttribute('position', `0 ${boxYPos} 0`);
             box.setAttribute('material', 'color', color);
             box.setAttribute('height', '0.3');
             box.setAttribute('width', `${width}`);
             box.setAttribute('depth', '0.1');
             parent.appendChild(box);
-            const label = document.createElement('a-text') as Entity;
+            const label = document.createElement('a-text');
             label.setAttribute('position', `0 ${labelYPos} 0.01`);
             label.setAttribute('align', 'center');
             label.setAttribute('scale', '0.6 0.6 0.6');
