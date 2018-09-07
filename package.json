@@ -16,7 +16,7 @@
     "vr"
   ],
   "dependencies": {
-    "aframe": "^0.7.1",
+    "aframe": "github:aframevr/aframe#master",
     "aframe-geo-projection-component": "^1.1.0",
     "d3-array": "^1.2.4",
     "d3-fetch": "^1.1.2",

@@ -10,9 +10,6 @@
     <meta property="og:title" content="Visualization of U.S. Population by County" />
     <meta property="og:description" content="A visualization of the population by county of the United States using WebVR." />
     <meta property="og:image" content="https://sbrudz.github.io/vr-us-population/assets/preview.png" />
-    <script src="https://aframe.io/releases/0.7.1/aframe.min.js"></script>
-    <script src="//cdn.rawgit.com/donmccurdy/aframe-extras/v3.12.4/dist/aframe-extras.min.js"></script>
-    <script src="https://unpkg.com/super-hands@2.1.0/dist/super-hands.min.js"></script>
     <%
     // webpack inserts bundled assets here
     %>
@@ -22,6 +19,8 @@
     <a-assets>
         <a-asset-item id="us-map" src="assets/cb_2016_us_county_20m-albers-trim.geo.json" />
     </a-assets>
+    <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
+    <a-entity laser-controls raycaster="far: 5"></a-entity>
 
     <a-plane id="legend"
              material="color: black;"
@@ -46,10 +45,6 @@
     ></a-entity>
 
     <a-sky color="#ECECEC"></a-sky>
-    <a-locomotor>
-        <a-entity hand-controls="left" super-hands></a-entity>
-        <a-entity hand-controls="right" super-hands></a-entity>
-    </a-locomotor>
 </a-scene>
 </body>
 </html>

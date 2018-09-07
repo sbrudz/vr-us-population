@@ -1,3 +1,4 @@
+import "aframe";
 import "aframe-geo-projection-component";
 import "./legend";
 import { extent } from "d3-array";
@@ -109,7 +110,7 @@ AFRAME.registerComponent('extrude-by-population', {
             const color = this.colorScale(populationDelta);
             const extrudeAmount = extrudeScale(population);
             const extrudeSettings = {
-                amount: extrudeAmount,
+                depth: extrudeAmount,
                 bevelEnabled: false
             };
 
