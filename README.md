@@ -46,6 +46,10 @@ To deploy changes to github pages, run:
 
     npm run deploy
 
+To be able to view the dev server on another device, use [ngrok](https://ngrok.com/) with the host-header set:
+
+ngrok http 3000 --host-header="localhost:3000"
+
 ## License
 
 This program is free software and is distributed under an [MIT License](LICENSE).
