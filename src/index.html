@@ -15,12 +15,12 @@
     %>
 </head>
 <body>
-<a-scene>
+<a-scene renderer="antialias: true;">
     <a-assets>
         <a-asset-item id="us-map" src="assets/cb_2016_us_county_20m-albers-trim.geo.json" />
     </a-assets>
-    <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
-    <a-entity laser-controls raycaster="far: 5"></a-entity>
+    <a-entity camera look-controls wasd-controls></a-entity>
+    <a-entity laser-controls></a-entity>
 
     <a-plane id="legend"
              material="color: black;"
